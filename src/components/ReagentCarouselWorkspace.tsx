@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { INITIAL_REAGENTS } from '../data/mockData';
 import { ReagentPosition } from '../types';
+import { MachinePartViewer } from './MachinePartViewer';
 
 export const ReagentCarouselWorkspace: React.FC = () => {
   const [reagents, setReagents] = useState<ReagentPosition[]>(INITIAL_REAGENTS);
@@ -61,6 +62,13 @@ export const ReagentCarouselWorkspace: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* 3D Visualization of the physical 67-position carousel */}
+      <MachinePartViewer
+        part="carousel"
+        title="DIRUI CS-T240"
+        subtitle="Mâm xoay vàng 67 vị trí: 45 thuốc thử R1/R2 (vòng ngoài) + 21 mẫu bệnh phẩm (vòng trong) + 1 dung dịch tẩy #45"
+      />
 
       {/* Main Grid: Visual Carousel (Left) + Detail Inspector (Right) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">

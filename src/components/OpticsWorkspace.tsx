@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { OPTICAL_WAVELENGTHS } from '../data/mockData';
 import { OpticalWavelength } from '../types';
+import { MachinePartViewer } from './MachinePartViewer';
 
 export const OpticsWorkspace: React.FC = () => {
   const [wavelengths, setWavelengths] = useState<OpticalWavelength[]>(OPTICAL_WAVELENGTHS);
@@ -53,6 +54,13 @@ export const OpticsWorkspace: React.FC = () => {
           <span>{isZeroing ? 'Đang Hiệu Chuẩn Nền 0.000 Abs...' : 'Hiệu Chuẩn Nền Trắng (Optical Zero)'}</span>
         </button>
       </div>
+
+      {/* 3D Visualization of the reaction cuvette disk & incubation water bath */}
+      <MachinePartViewer
+        part="reactionDisk"
+        title="DIRUI CS-T240"
+        subtitle="Mâm cóng phản ứng 120 vị trí (6 bộ x 20 cóng quang học 6mm), ngâm bể ủ tuần hoàn 37.0°C ± 0.1°C"
+      />
 
       {/* Sensor Health Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">

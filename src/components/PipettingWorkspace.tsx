@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { MachinePartViewer } from './MachinePartViewer';
 
 export const PipettingWorkspace: React.FC = () => {
   const [aspirateVolume, setAspirateVolume] = useState<number>(15.0);
@@ -57,6 +58,13 @@ export const PipettingWorkspace: React.FC = () => {
           <span>{isTestCycleRunning ? 'Đang Thực Thi Chu Trình Thử...' : 'Chạy Thử Chu Trình Hút & Khuấy'}</span>
         </button>
       </div>
+
+      {/* 3D Visualization of the probe arm, Teflon mixer & wash well */}
+      <MachinePartViewer
+        part="pipetting"
+        title="DIRUI CS-T240"
+        subtitle="Kim hút mẫu/thuốc thử tích hợp LLD, cánh khuấy Teflon motor cốc rỗng & giếng rửa kim xoáy"
+      />
 
       {/* Control Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
