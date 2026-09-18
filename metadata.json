@@ -1,0 +1,6 @@
+{
+  "name": "Dirui Medical 3D - Diagnostic Simulation Platform",
+  "description": "Nền tảng mô phỏng 3D tương tác và giám sát đo đạc lâm sàng cho hệ thống xét nghiệm sinh hóa và nước tiểu Dirui CS-T240, CS-6400, FUS-2000, H-800.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
