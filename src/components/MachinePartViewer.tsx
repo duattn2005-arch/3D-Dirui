@@ -354,10 +354,13 @@ export const MachinePartViewer: React.FC<MachinePartViewerProps> = ({
       probeMandrelGear.position.set(0, 0.15, 0);
       armRoot.add(probeMandrelGear);
 
-      // Wash well tower (relative offset matches ThreeMachineViewer: +2.4 on Z)
+      // Wash well tower: a FIXED fixture mounted on the incubation bath (Fig 3-4-1 "Probe
+      // Rinsing Bath"), not part of the swinging probe arm - the probe swings over to it,
+      // so it must be a sibling of armRoot rather than its child (matches ThreeMachineViewer,
+      // where washWellGroup is added directly to machineRoot).
       const washWellGroup = new THREE.Group();
       washWellGroup.position.set(0, 0, 2.4);
-      armRoot.add(washWellGroup);
+      scene.add(washWellGroup);
 
       const washWellTower = new THREE.Mesh(new THREE.CylinderGeometry(0.65, 0.75, 2.0, 24), matCleanroomWhite);
       washWellTower.position.y = 1.0;
@@ -367,10 +370,13 @@ export const MachinePartViewer: React.FC<MachinePartViewerProps> = ({
       washWellInner.position.y = 1.95;
       washWellGroup.add(washWellInner);
 
-      // Teflon mixer paddle assembly (relative offset matches ThreeMachineViewer: +5.4 X, -2.4 Z)
+      // Teflon mixer assembly: its own independent unit (Section 3.5 "Mixing unit"), not
+      // mechanically attached to the probe arm - it swings on its own axis, so it too must
+      // be a sibling of armRoot (matches ThreeMachineViewer's mixerArmGroup being added
+      // directly to machineRoot with its own independent rotation).
       mixerRoot = new THREE.Group();
       mixerRoot.position.set(5.4, 0, -2.4);
-      armRoot.add(mixerRoot);
+      scene.add(mixerRoot);
 
       const mixerBase = new THREE.Mesh(new THREE.CylinderGeometry(0.42, 0.48, 2.6, 20), matStainlessSteel);
       mixerBase.position.y = 1.3;
@@ -398,10 +404,11 @@ export const MachinePartViewer: React.FC<MachinePartViewerProps> = ({
       mixerPaddle.position.set(1.8, 1.8, 0);
       mixerRoot.add(mixerPaddle);
 
-      // Colorimetric cup rinsing probe rack: multiple nozzles, up-down only (Fig 4-20)
+      // Cuvette rinsing mechanism (Section 3.6): its own fixed one-dimensional up-down unit
+      // positioned over the reaction disk, mechanically independent of the probe/mixer arms.
       const rinsingRackGroup = new THREE.Group();
       rinsingRackGroup.position.set(1.6, 0, 2.1);
-      armRoot.add(rinsingRackGroup);
+      scene.add(rinsingRackGroup);
 
       const rinsingRackSlider = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.6, 0.6), matStainlessSteel);
       rinsingRackSlider.position.set(0, 3.1, 0);
