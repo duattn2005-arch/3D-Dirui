@@ -696,15 +696,31 @@ export const ThreeMachineViewer = forwardRef<ThreeMachineViewerRef, ThreeMachine
       mainboardGroup.add(fin);
     }
 
-    // RS-232 DB9 Serial Port (connecting to PC Workstation software)
+    // J02 RS-232 DB9 Serial Port (connecting to PC Workstation software)
     const db9Port = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.7, 1.0), matStainlessSteel);
     db9Port.position.set(-6.0, 0.45, -3.2);
     mainboardGroup.add(db9Port);
 
-    // RJ45 Ethernet Debug Socket
-    const rj45Port = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.8, 1.2), matStainlessSteel);
-    rj45Port.position.set(-4.2, 0.5, -3.2);
-    mainboardGroup.add(rj45Port);
+    // J10 DB9 Rack: second serial port for monitoring/debug (per Section 5.3.4 wiring
+    // diagram - "Interface for serial port monitoring and communication", not RJ45)
+    const debugDb9Port = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.65, 0.9), matStainlessSteel);
+    debugDb9Port.position.set(-4.3, 0.45, -3.2);
+    mainboardGroup.add(debugDb9Port);
+
+    // J04 Water Tank / Incubation Bath Pressure Sensor Connector
+    const socketJ04 = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.5, 0.6), matCleanroomWhite);
+    socketJ04.position.set(1.4, 0.35, -2.6);
+    mainboardGroup.add(socketJ04);
+
+    // J07 Float Switch / Liquid Level Signal Connector (water tank + waste tank floats)
+    const socketJ07 = new THREE.Mesh(new THREE.BoxGeometry(1.0, 0.5, 0.6), matCleanroomWhite);
+    socketJ07.position.set(3.0, 0.35, -2.6);
+    mainboardGroup.add(socketJ07);
+
+    // J424 Diaphragm Pump Driver Connector
+    const connJ424 = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.45, 0.5), matSiliconChip);
+    connJ424.position.set(4.0, 0.3, -2.4);
+    mainboardGroup.add(connJ424);
 
     // Solenoid Valve Driver FETs for SV6, SV10, SV13 with mini heatsinks
     [-1.2, -0.2, 0.8].forEach(vx => {
@@ -1190,6 +1206,17 @@ export const ThreeMachineViewer = forwardRef<ThreeMachineViewerRef, ThreeMachine
     diaphragmPumpHead.position.set(-3.4, 2.55, -3.6);
     fluidicsGroup.add(diaphragmPumpHead);
 
+    // OVERFLOW VALVE (Z46, SAP 1009835) - sits directly beside the diaphragm pump in
+    // Fig 4-2-1, regulating the water tank overflow into the high-concentration waste line
+    const overflowValveBody = new THREE.Mesh(new THREE.CylinderGeometry(0.42, 0.42, 1.1, 16), matDiruiChassisBlue);
+    overflowValveBody.rotation.x = Math.PI / 2;
+    overflowValveBody.position.set(-1.9, 1.9, -3.6);
+    fluidicsGroup.add(overflowValveBody);
+
+    const overflowValveCoil = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.3, 0.6, 16), matDarkMedicalBezel);
+    overflowValveCoil.position.set(-1.9, 2.5, -3.6);
+    fluidicsGroup.add(overflowValveCoil);
+
     // Color-Coded Authentic PTFE Tubing Lines
     const fluidTubingPaths = [
       // Pure water feed (Blue) from Z7 to wash station
@@ -1197,7 +1224,10 @@ export const ThreeMachineViewer = forwardRef<ThreeMachineViewerRef, ThreeMachine
       // Sample/Reagent aspiration line (Clear/Cyan) from 500uL Syringe to Probe
       { color: 0x38bdf8, p1: new THREE.Vector3(-6.8, 8.3, 3.2), p2: new THREE.Vector3(-8.0, 8.0, 1.5), p3: new THREE.Vector3(-8.2, 11.2, -0.2) },
       // High-concentration waste drainage (Amber) from Cuvette Wash to Z25
-      { color: 0xd97706, p1: new THREE.Vector3(-2.8, 7.8, -3.2), p2: new THREE.Vector3(-4.5, 5.2, -0.5), p3: new THREE.Vector3(-6.3, 5.4, 1.7) }
+      { color: 0xd97706, p1: new THREE.Vector3(-2.8, 7.8, -3.2), p2: new THREE.Vector3(-4.5, 5.2, -0.5), p3: new THREE.Vector3(-6.3, 5.4, 1.7) },
+      // Diaphragm pump -> Overflow valve -> high-concentration waste circuit (Fig 4-2-1)
+      { color: 0xd97706, p1: new THREE.Vector3(-3.4, 2.55, -3.6), p2: new THREE.Vector3(-2.6, 2.7, -3.6), p3: new THREE.Vector3(-1.9, 2.5, -3.6) },
+      { color: 0xd97706, p1: new THREE.Vector3(-1.9, 1.9, -3.6), p2: new THREE.Vector3(-3.0, 1.0, -2.8), p3: new THREE.Vector3(-4.8, 1.6, -1.8) }
     ];
 
     fluidTubingPaths.forEach(({ color, p1, p2, p3 }) => {
