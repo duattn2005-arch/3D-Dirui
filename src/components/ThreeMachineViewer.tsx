@@ -530,42 +530,52 @@ export const ThreeMachineViewer = forwardRef<ThreeMachineViewerRef, ThreeMachine
     leftPanel.castShadow = true;
     exteriorGroup.add(leftPanel);
 
-    // Right Side Panel with Matrix of Ventilation Slots
-    const rightCanvas = document.createElement('canvas');
-    rightCanvas.width = 512;
-    rightCanvas.height = 512;
-    const rctx = rightCanvas.getContext('2d');
-    if (rctx) {
-      rctx.fillStyle = '#f8fafc';
-      rctx.fillRect(0, 0, 512, 512);
-
-      // Draw 4 columns x 8 rows of dark ventilation slots in lower rear
-      rctx.fillStyle = '#334155';
-      for (let col = 0; col < 4; col++) {
-        for (let row = 0; row < 8; row++) {
-          rctx.beginPath();
-          rctx.roundRect(80 + col * 32, 220 + row * 26, 14, 18, 4);
-          rctx.fill();
-        }
-      }
-    }
-    const rightTexture = new THREE.CanvasTexture(rightCanvas);
-    const matRightPanelWithVents = new THREE.MeshStandardMaterial({
-      map: rightTexture,
-      roughness: 0.24,
-      metalness: 0.05
-    });
-
-    const rightPanel = new THREE.Mesh(new THREE.BoxGeometry(0.4, 6.4, 16.8), matRightPanelWithVents);
+    // Right Side Panel (plain - per CS-T200-07-00 exploded cover diagram, ventilation
+    // slots are on the Rear Left/Right Covers, not the side panels)
+    const rightPanel = new THREE.Mesh(new THREE.BoxGeometry(0.4, 6.4, 16.8), matCleanroomWhite);
     rightPanel.position.set(13.6, 4.2, 0);
     rightPanel.castShadow = true;
     exteriorGroup.add(rightPanel);
 
-    // Rear Splash Wall rising up to the hood hinge
-    const rearWall = new THREE.Mesh(new THREE.BoxGeometry(27.4, 11.8, 0.6), matCleanroomWhite);
-    rearWall.position.set(0, 6.9, -8.3);
-    rearWall.castShadow = true;
-    exteriorGroup.add(rearWall);
+    // Rear Splash Wall rising up to the hood hinge, split into "Rear Left Cover" (#9) and
+    // "Rear Right Cover" (#10) sections, each carrying its own ventilation slot grille,
+    // matching the CS-T200-07-00 Cover Unit exploded diagram (Section 9.4.9).
+    const rearVentCanvas = document.createElement('canvas');
+    rearVentCanvas.width = 512;
+    rearVentCanvas.height = 512;
+    const rvctx = rearVentCanvas.getContext('2d');
+    if (rvctx) {
+      rvctx.fillStyle = '#f8fafc';
+      rvctx.fillRect(0, 0, 512, 512);
+
+      // Dense grid of ventilation slots (two stacked grilles, as shown on both rear covers)
+      rvctx.fillStyle = '#334155';
+      for (let block = 0; block < 2; block++) {
+        for (let col = 0; col < 8; col++) {
+          for (let row = 0; row < 5; row++) {
+            rvctx.beginPath();
+            rvctx.roundRect(40 + col * 30, 40 + block * 220 + row * 26, 20, 16, 3);
+            rvctx.fill();
+          }
+        }
+      }
+    }
+    const rearVentTexture = new THREE.CanvasTexture(rearVentCanvas);
+    const matRearCoverWithVents = new THREE.MeshStandardMaterial({
+      map: rearVentTexture,
+      roughness: 0.24,
+      metalness: 0.05
+    });
+
+    const rearLeftCover = new THREE.Mesh(new THREE.BoxGeometry(13.6, 11.8, 0.6), matRearCoverWithVents);
+    rearLeftCover.position.set(-6.85, 6.9, -8.3);
+    rearLeftCover.castShadow = true;
+    exteriorGroup.add(rearLeftCover);
+
+    const rearRightCover = new THREE.Mesh(new THREE.BoxGeometry(13.6, 11.8, 0.6), matRearCoverWithVents);
+    rearRightCover.position.set(6.85, 6.9, -8.3);
+    rearRightCover.castShadow = true;
+    exteriorGroup.add(rearRightCover);
 
     // Working Basin Inner Deck Floor (Recessed down)
     const deckMat = new THREE.MeshStandardMaterial({ color: 0xf1f5f9, roughness: 0.3, metalness: 0.1 });
@@ -1013,10 +1023,20 @@ export const ThreeMachineViewer = forwardRef<ThreeMachineViewerRef, ThreeMachine
     const psuEnclosure = new THREE.Mesh(new THREE.BoxGeometry(5.0, 3.6, 6.2), matStainlessSteel);
     psuGroup.add(psuEnclosure);
 
-    // AC Power Inlet Socket with EMI Line Filter
+    // AC Power Inlet Socket
     const acInlet = new THREE.Mesh(new THREE.BoxGeometry(1.6, 1.2, 0.8), matDarkMedicalBezel);
     acInlet.position.set(2.6, 0.5, -1.8);
     psuGroup.add(acInlet);
+
+    // EMI Line Filter module (Cover Unit #12, SAP 1013214, internal fuse 5x20 6.3A 250V)
+    const emiFilterModule = new THREE.Mesh(new THREE.BoxGeometry(1.8, 0.9, 1.1), matStainlessSteel);
+    emiFilterModule.position.set(2.6, 0.45, -3.0);
+    psuGroup.add(emiFilterModule);
+
+    const emiFilterFuseCap = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.22, 0.5, 16), matDarkMedicalBezel);
+    emiFilterFuseCap.rotation.z = Math.PI / 2;
+    emiFilterFuseCap.position.set(1.9, 0.45, -3.0);
+    psuGroup.add(emiFilterFuseCap);
 
     // Main Power Rocker Switch S1 (Red toggle)
     const switchS1 = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.6, 0.5), matLedSevenSegmentRed);
@@ -1159,6 +1179,16 @@ export const ThreeMachineViewer = forwardRef<ThreeMachineViewerRef, ThreeMachine
     pumpImpellerHead.rotation.z = Math.PI / 2;
     pumpImpellerHead.position.set(3.8, 0.8, 3.0);
     fluidicsGroup.add(pumpImpellerHead);
+
+    // DIAPHRAGM PUMP (Z45/Wire J424, SAP 2004363) - a separate pneumatic pump from the
+    // magnetic circulation pump above; confirmed by the connector table (Chapter 5)
+    const diaphragmPumpBody = new THREE.Mesh(new THREE.BoxGeometry(1.4, 1.6, 1.4), matDarkMedicalBezel);
+    diaphragmPumpBody.position.set(-3.4, 1.6, -3.6);
+    fluidicsGroup.add(diaphragmPumpBody);
+
+    const diaphragmPumpHead = new THREE.Mesh(new THREE.CylinderGeometry(0.55, 0.55, 0.5, 20), matStainlessSteel);
+    diaphragmPumpHead.position.set(-3.4, 2.55, -3.6);
+    fluidicsGroup.add(diaphragmPumpHead);
 
     // Color-Coded Authentic PTFE Tubing Lines
     const fluidTubingPaths = [
