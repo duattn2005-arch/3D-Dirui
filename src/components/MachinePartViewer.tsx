@@ -121,6 +121,7 @@ export const MachinePartViewer: React.FC<MachinePartViewerProps> = ({
     });
     const fluidMat = new THREE.MeshStandardMaterial({ color: 0x38bdf8, roughness: 0.2 });
     const deckMat = new THREE.MeshStandardMaterial({ color: 0xf1f5f9, roughness: 0.3, metalness: 0.1 });
+    const matBrassAccent = new THREE.MeshStandardMaterial({ color: 0xd97706, metalness: 0.85, roughness: 0.25 });
 
     const spinGroups: THREE.Object3D[] = [];
     let armRoot: THREE.Group | undefined;
@@ -129,11 +130,40 @@ export const MachinePartViewer: React.FC<MachinePartViewerProps> = ({
     let mixerPaddle: THREE.Mesh | undefined;
 
     if (part === 'carousel') {
-      // Circular support deck
-      const deck = new THREE.Mesh(new THREE.CylinderGeometry(5.4, 5.4, 0.3, 64), deckMat);
-      deck.position.y = -0.5;
-      deck.receiveShadow = true;
-      scene.add(deck);
+      // Refrigerated storehouse drum housing the disk (Section 4.3, Fig 4-8/4-9)
+      const storehouseMat = new THREE.MeshStandardMaterial({ color: 0xe4e4e7, roughness: 0.35, metalness: 0.15 });
+      const storehouseDrum = new THREE.Mesh(new THREE.CylinderGeometry(5.6, 5.8, 1.4, 64), storehouseMat);
+      storehouseDrum.position.y = -0.9;
+      storehouseDrum.receiveShadow = true;
+      scene.add(storehouseDrum);
+
+      const storehouseRim = new THREE.Mesh(new THREE.CylinderGeometry(5.65, 5.65, 0.15, 64), matDarkMedicalBezel);
+      storehouseRim.position.y = -0.22;
+      scene.add(storehouseRim);
+
+      // Barcode reader scanning window (Fig 4-9: reads reagent/sample bottle labels)
+      const barcodeWindow = new THREE.Mesh(
+        new THREE.BoxGeometry(0.7, 0.9, 0.15),
+        new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.2, metalness: 0.4 })
+      );
+      barcodeWindow.position.set(5.55, -0.5, 0);
+      scene.add(barcodeWindow);
+
+      const barcodeScanLine = new THREE.Mesh(
+        new THREE.BoxGeometry(0.55, 0.04, 0.05),
+        new THREE.MeshStandardMaterial({ color: 0xef4444, emissive: 0xef4444, emissiveIntensity: 2 })
+      );
+      barcodeScanLine.position.set(5.62, -0.5, 0);
+      scene.add(barcodeScanLine);
+
+      // Air cooling fan grille venting the semiconductor refrigeration module
+      const fanGrille = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.9, 0.9, 0.15, 24),
+        new THREE.MeshStandardMaterial({ color: 0x27272a, roughness: 0.5 })
+      );
+      fanGrille.rotation.z = Math.PI / 2;
+      fanGrille.position.set(0, -0.9, 5.5);
+      scene.add(fanGrille);
 
       const reagentDiskGroup = new THREE.Group();
       scene.add(reagentDiskGroup);
@@ -237,6 +267,41 @@ export const MachinePartViewer: React.FC<MachinePartViewerProps> = ({
           cuvetteDiskGroup.add(dividerMarker);
         }
       }
+
+      // Incubation bath ring circulating 37.0C +/-0.1C water around the cuvettes (Fig 4-13/4-14)
+      const incubationBathMat = new THREE.MeshPhysicalMaterial({
+        color: 0x38bdf8,
+        transparent: true,
+        opacity: 0.35,
+        roughness: 0.15,
+        transmission: 0.6
+      });
+      const incubationBathRing = new THREE.Mesh(new THREE.TorusGeometry(3.55, 0.32, 16, 64), incubationBathMat);
+      incubationBathRing.rotation.x = Math.PI / 2;
+      incubationBathRing.position.y = 0.1;
+      scene.add(incubationBathRing);
+
+      // Optical system module: grating spectrophotometer housing beside the bath (Fig 4-15)
+      const opticalSystemBox = new THREE.Mesh(new THREE.BoxGeometry(1.6, 1.4, 2.0), matDarkMedicalBezel);
+      opticalSystemBox.position.set(-4.6, 0.3, 0);
+      scene.add(opticalSystemBox);
+
+      const opticalWindowSlit = new THREE.Mesh(
+        new THREE.BoxGeometry(0.15, 0.5, 1.2),
+        new THREE.MeshStandardMaterial({ color: 0x0ea5e9, emissive: 0x0ea5e9, emissiveIntensity: 1.2 })
+      );
+      opticalWindowSlit.position.set(-3.85, 0.3, 0);
+      scene.add(opticalWindowSlit);
+
+      // Probe/stirring rinsing bath outlet stubs mounted on the incubation bath ring
+      [
+        [3.4, 1.1],
+        [2.6, -2.4]
+      ].forEach(([px, pz]) => {
+        const port = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.18, 0.5, 12), matStainlessSteel);
+        port.position.set(px, 0.6, pz);
+        scene.add(port);
+      });
     }
 
     if (part === 'pipetting') {
@@ -270,6 +335,25 @@ export const MachinePartViewer: React.FC<MachinePartViewerProps> = ({
       probeNeedle.position.set(3.8, 2.2, 0);
       armRoot.add(probeNeedle);
 
+      // Probe rotating step motor head + gear belt driving the arm (Fig 4-1/4-2)
+      const probeMotorHead = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.5, 0.5), matDarkMedicalBezel);
+      probeMotorHead.position.set(0.35, 4.35, 0);
+      armRoot.add(probeMotorHead);
+
+      const probeGearBeltRing = new THREE.Mesh(new THREE.TorusGeometry(0.32, 0.04, 8, 24), matStainlessSteel);
+      probeGearBeltRing.position.set(0, 4.35, 0);
+      armRoot.add(probeGearBeltRing);
+
+      // Probe up-down counterweight riding the second guide rail
+      const probeUpDownWeight = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.15, 0.8, 12), matStainlessSteel);
+      probeUpDownWeight.position.set(0.6, 3.0, 0);
+      armRoot.add(probeUpDownWeight);
+
+      // Probe rotating gear + mandrel at the base of the column
+      const probeMandrelGear = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.22, 0.15, 20), matBrassAccent);
+      probeMandrelGear.position.set(0, 0.15, 0);
+      armRoot.add(probeMandrelGear);
+
       // Wash well tower (relative offset matches ThreeMachineViewer: +2.4 on Z)
       const washWellGroup = new THREE.Group();
       washWellGroup.position.set(0, 0, 2.4);
@@ -288,9 +372,23 @@ export const MachinePartViewer: React.FC<MachinePartViewerProps> = ({
       mixerRoot.position.set(5.4, 0, -2.4);
       armRoot.add(mixerRoot);
 
-      const mixerBase = new THREE.Mesh(new THREE.CylinderGeometry(0.45, 0.5, 3.5, 20), matStainlessSteel);
-      mixerBase.position.y = 1.75;
+      const mixerBase = new THREE.Mesh(new THREE.CylinderGeometry(0.42, 0.48, 2.6, 20), matStainlessSteel);
+      mixerBase.position.y = 1.3;
       mixerRoot.add(mixerBase);
+
+      // Boxy motor housing stack: swing motor on top, up-down motor to the side (Fig 4-16/4-17)
+      const mixerMotorHousing = new THREE.Mesh(new THREE.BoxGeometry(0.9, 1.5, 0.9), matDarkMedicalBezel);
+      mixerMotorHousing.position.set(0, 2.9, 0);
+      mixerRoot.add(mixerMotorHousing);
+
+      const mixerSwingMotorTop = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.55, 0.7), matCleanroomWhite);
+      mixerSwingMotorTop.position.set(0, 3.9, 0);
+      mixerRoot.add(mixerSwingMotorTop);
+
+      const mixerUpDownMotorSide = new THREE.Mesh(new THREE.CylinderGeometry(0.32, 0.32, 0.9, 16), matStainlessSteel);
+      mixerUpDownMotorSide.rotation.z = Math.PI / 2;
+      mixerUpDownMotorSide.position.set(0.65, 2.9, 0);
+      mixerRoot.add(mixerUpDownMotorSide);
 
       const mixerBoom = new THREE.Mesh(new THREE.BoxGeometry(2.4, 0.35, 0.5), matCleanroomWhite);
       mixerBoom.position.set(0.8, 3.2, 0);
@@ -299,6 +397,25 @@ export const MachinePartViewer: React.FC<MachinePartViewerProps> = ({
       mixerPaddle = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.03, 2.4, 16), matStainlessSteel);
       mixerPaddle.position.set(1.8, 1.8, 0);
       mixerRoot.add(mixerPaddle);
+
+      // Colorimetric cup rinsing probe rack: multiple nozzles, up-down only (Fig 4-20)
+      const rinsingRackGroup = new THREE.Group();
+      rinsingRackGroup.position.set(1.6, 0, 2.1);
+      armRoot.add(rinsingRackGroup);
+
+      const rinsingRackSlider = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.6, 0.6), matStainlessSteel);
+      rinsingRackSlider.position.set(0, 3.1, 0);
+      rinsingRackGroup.add(rinsingRackSlider);
+
+      const rinsingRackPlate = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.15, 0.5), matDarkMedicalBezel);
+      rinsingRackPlate.position.set(0, 2.6, 0);
+      rinsingRackGroup.add(rinsingRackPlate);
+
+      for (let n = 0; n < 4; n++) {
+        const nozzle = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.02, 1.4, 10), matStainlessSteel);
+        nozzle.position.set(-0.45 + n * 0.3, 1.9, 0);
+        rinsingRackGroup.add(nozzle);
+      }
     }
 
     const defaultCameraPos = new THREE.Vector3(...meta.cameraPos);
